@@ -11,7 +11,7 @@ export const agentRouter = createTRPCRouter({
         const [existingData] = await db.select(
             {
                 ...getTableColumns(agents),
-                meetingCount : sql<number>`5`,
+                meetingCount : sql<number>`1`,
             }
         ).from(agents)
         .where(eq(agents.id , input.id));
@@ -22,8 +22,16 @@ export const agentRouter = createTRPCRouter({
         
         return existingData;
     }),
-    getMany: protectedProcedure.query(async() => {
-        const data = await db.select().from(agents);
+    getMany: protectedProcedure.input(z.object({
+        page : z.number().default(1),
+        pageSize:z.number().min(1).max(100).default(10),
+        search : z.string().nullish()
+    }).optional())
+       .query(async() => {
+        const data = await db.select({
+            ...getTableColumns(agents),
+            meetingCount : sql<number>`2`,
+        }).from(agents);
 
         // await new Promise((resolve)=>setTimeout(resolve,5000));
 

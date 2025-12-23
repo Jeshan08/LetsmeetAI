@@ -171,7 +171,7 @@ export const SignInView = () =>{
                     <div className="text-center text-sm">
                        Don&apos;t have an account? 
                        <Link
-                          href="/auth/sign-up"
+                          href="/sign-up"
                           className="underline underline-offset-4"  
                         >
                        Sign Up
