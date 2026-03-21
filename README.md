@@ -4,7 +4,7 @@
 
 ## Project Overview
 
-Welcome to the repository for the **AI Meeting Scheduler & Persona Customization** project! This is an innovative, full-stack AI SaaS platform currently under active development. Our goal is to revolutionize virtual communication by enabling users to schedule and conduct live, interactive video calls directly with AI personas. Imagine having an AI expert, a specialized coach, or even a specific character available 24/7, whose behavior and responses you can fully customize using natural language prompts.
+Welcome to the repository for the **AI Meeting Scheduler & Personal Customization** project! This is an innovative, full-stack AI SaaS platform currently under active development. Our goal is to revolutionize virtual communication by enabling users to schedule and conduct live, interactive video calls directly with AI personas. Imagine having an AI expert, a specialized coach, or even a specific character available 24/7, whose behavior and responses you can fully customize using natural language prompts.
 
 ---
 

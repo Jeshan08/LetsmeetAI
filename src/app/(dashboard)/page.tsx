@@ -6,13 +6,13 @@ import { redirect } from "next/navigation";
  
 
 const Page = async () => {
-
+  //  basically this header is what browser send to server
   const session = await auth.api.getSession({
     headers : await headers(),
   });
 
   if(!session){
-    redirect("/auth/sign-in");
+    redirect("/sign-in");
   }
 
   return <HomeView/>

@@ -17,6 +17,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 
+// ao the refine method here just shows the error if passwrods are not equal and path mean it will show error under confirm pass
+// because we use name same as confirmpassword
     const formSchema = z.object({
         name : z.string().min(1,{message : "Name is required"}),
         email:z.string().email(),
@@ -29,10 +31,14 @@ import { useRouter } from "next/navigation";
 
 export const SignUpView = () =>{
     const router = useRouter();
+     // use state used for live interaction woth form and usein ghr values in code 
     const [error,setError] = useState<string | null>(null);
     const [pending, isPending] = useState(false);
 
 
+    // using useform to use all methods like values... and then we strictly telling
+    // useform that the scehema is the zod which is described above
+    //  zod resolver is the one which checks the form when user types and tells if anything is missing from zod schema
     const form = useForm<z.infer<typeof formSchema>>({
         resolver : zodResolver(formSchema),
         defaultValues : {
@@ -46,6 +52,7 @@ export const SignUpView = () =>{
     const onSubmit = (data:z.infer<typeof formSchema>) =>{
         setError(null);
         isPending(true);
+        //  calling the server authclient for email verifcation with the better auth and the neon postgress
         authClient.signUp.email(
             {
                 name: data.name,
@@ -82,6 +89,7 @@ export const SignUpView = () =>{
             },
         )
     }
+    // the client side code which renders on browser
     return(
         <div className="flex flex-col gap-6">
             <Card className="overflow-hidden p-0">
@@ -118,10 +126,11 @@ export const SignUpView = () =>{
 
                     </div>
                     <div className="grid gap-3">
+                        {/* formfield is the actual field we using here its input */}
                         <FormField
-                            control={form.control}
+                            control={form.control} // passing the control to the form
                             name="email"
-                            render={({field}) =>(
+                            render={({field}) =>( // this reders the ui, so field here have all the values like name,value whatever the input needs so it basically saves time of writing all the things
                                 <FormItem>
                                     <FormLabel>Email</FormLabel>
                                     <FormControl>
@@ -131,6 +140,7 @@ export const SignUpView = () =>{
                                             {...field}
                                         />
                                     </FormControl>
+                                    {/*this formMessage is for the error messages if any by zod  */}
                                     <FormMessage/>
                                 </FormItem>
                             )}  
@@ -175,8 +185,10 @@ export const SignUpView = () =>{
                             )}  
                         />
                     </div>
+                    {/* this double !! is basically doing 2 things. first its changing to boolean lets say it there error ir will make it false and the seond will change back to true. why we need 2 becuse we have to change returned object to boolean */}
                     {!!error && (
                         <Alert className="bg-destructive/10">
+                            {/* and this alert is for the server sider erro from database */}
                             <OctagonAlertIcon className="h-4 w-4 !text-destructive"/>
                             <AlertTitle>{error}</AlertTitle>
                         </Alert>
