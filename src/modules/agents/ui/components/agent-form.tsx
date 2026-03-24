@@ -44,6 +44,23 @@ export const AgentForm = ({
         queryClient.invalidateQueries(
           trpc.agents.getMany.queryOptions({})
         );
+        //invalidate free tier usage in future
+        onSuccess?.();
+      },
+      onError:(error)=>{
+        toast.error(error.message);
+      },
+    })
+  );
+
+
+  const updateAgent = useMutation(
+    trpc.agents.update.mutationOptions({
+      onSuccess:()=>{
+        // this is just basically making a refresh to load the newly added on success
+        queryClient.invalidateQueries(
+          trpc.agents.getMany.queryOptions({})
+        );
 
         if(initialValues?.id){
           queryClient.invalidateQueries(
@@ -58,6 +75,7 @@ export const AgentForm = ({
     })
   );
 
+
   const form = useForm<z.infer<typeof agentsInsertScehma>>({
     resolver : zodResolver(agentsInsertScehma),
     defaultValues :{
@@ -67,10 +85,10 @@ export const AgentForm = ({
   });
 
   const isEdit = !!initialValues?.id;
-  const isPending = createAgent.isPending;
+  const isPending = createAgent.isPending || updateAgent.isPending;
   const onSubmit = (values : z.infer<typeof agentsInsertScehma>) =>{
     if(isEdit){
-      console.log("TODO: UPDATE AGENT");
+      updateAgent.mutate({...values,id:initialValues.id})
     }
     else{
       createAgent.mutate(values);
