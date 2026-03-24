@@ -42,7 +42,7 @@ export const AgentForm = ({
       onSuccess:()=>{
         // this is just basically making a refresh to load the newly added on success
         queryClient.invalidateQueries(
-          trpc.agents.getMany.queryOptions()
+          trpc.agents.getMany.queryOptions({})
         );
 
         if(initialValues?.id){
