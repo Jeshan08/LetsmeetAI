@@ -5,7 +5,7 @@ import {useForm} from "react-hook-form";
 import { AgentGetOne } from "../../types";
 // import { useRouter } from "next/navigation";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { agentsInsertScehma } from "../../scemas";
+import { agentsInsertScehma } from "../../schemas";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import { Button } from "@/components/ui/button";
@@ -40,6 +40,7 @@ export const AgentForm = ({
   const createAgent = useMutation(
     trpc.agents.create.mutationOptions({
       onSuccess:()=>{
+        // this is just basically making a refresh to load the newly added on success
         queryClient.invalidateQueries(
           trpc.agents.getMany.queryOptions()
         );

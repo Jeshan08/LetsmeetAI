@@ -16,8 +16,8 @@ export const DashboardUserButton = () => {
     const isMobile = useIsMobile();
 
     const {data, isPending} = authClient.useSession();
-    console.log(data?.user.image);
-    const onLogout =   ()=>{
+    console.log(data?.user);
+    const onLogout =  ()=>{
           authClient.signOut({
             fetchOptions:{
                 onSuccess : ()=>{

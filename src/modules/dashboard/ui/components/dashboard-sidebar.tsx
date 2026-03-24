@@ -1,9 +1,11 @@
 "use-client";
 
 import { cn } from "@/lib/utils";
+
 import { BotIcon, StarIcon,VideoIcon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+
 import { Separator } from "@/components/ui/separator";
 import { 
     Sidebar,
@@ -16,6 +18,8 @@ import {
     SidebarMenuItem,
     SidebarMenuButton
  } from "@/components/ui/sidebar";
+
+
 import { usePathname } from "next/navigation";
 import {DashboardUserButton} from "./dashboard-user-button";
 
@@ -117,5 +121,5 @@ export const DashboardSidebar = ()=> {
             </SidebarFooter>
         </Sidebar>
     )
-
+    
 }
