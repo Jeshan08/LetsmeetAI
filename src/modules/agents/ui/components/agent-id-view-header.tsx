@@ -20,8 +20,8 @@ import {
 interface Props {
   agentId :  string,
   agentName : string , 
-  onEdit  : void ,
-  onRemove : void
+  onEdit  : () => void ,
+  onRemove : () => void
 };
 
 export const  AgentIdViewHeader = ({
