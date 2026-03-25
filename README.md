@@ -20,7 +20,7 @@ Welcome to the repository for the **AI Meeting Scheduler & Personal Customizatio
 
 This platform addresses these challenges by offering:
 
-* **AI-Driven Scheduling:** Seamlessly book meetings with AI entities.
+* **AI-Driven Scheduling:** Seamlessly book meetings with AI entities/agents.
 * **Dynamic AI Personas:** Define and refine the AI's role, tone, and knowledge base through intuitive text prompts.
 * **Live Video/Audio Interaction:** Engage in real-time, "Zoom-like" conversations with your customized AI, complete with video and audio streaming.
 * **Versatile Applications:** From virtual coaches and customer support simulations to interactive learning modules and specialized expert consultations, the possibilities are vast.
