@@ -64,7 +64,7 @@ export const CommandSelect = ({
       <CommandResponsiveDialog
       shouldFilter = {!onSearch}
       open={open}
-      onOpenChange={setOpen}
+      onOpenChange={handleOpenChange}
       >
         <CommandInput placeholder="Search..." onValueChange={onSearch}/>
           <CommandList>
