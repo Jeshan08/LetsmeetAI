@@ -9,11 +9,35 @@ import { DEFAULT_PAGE, DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE, MIN_PAGE_SIZE } from "@
 import { TRPCError } from "@trpc/server";
 import { meetingsInsertScehma, meetingsUpdateSchema } from "../schemas";
 import { MeetingStatus } from "../types";
+import { streamVideo } from "@/lib/stream-video";
+import { generateAvatarUri } from "@/lib/avatar";
 
 
 export const meetingsRouter = createTRPCRouter({
     
+    generateToken: protectedProcedure.mutation(async ({ ctx }) => {
+    await streamVideo.upsertUsers([
+      {
+        id: ctx.auth.user.id,
+        name: ctx.auth.user.name,
+        role: "admin",
+        image: 
+          ctx.auth.user.image ??
+          generateAvatarUri({ seed: ctx.auth.user.name, variant: "initials" }),
+      },
+    ]);
 
+    const expirationTime = Math.floor(Date.now() / 1000) + 3600; // 1 hour
+    const issuedAt = Math.floor(Date.now() / 1000) - 60;
+
+    const token = streamVideo.generateUserToken({
+      user_id: ctx.auth.user.id,
+      exp: expirationTime,
+      validity_in_seconds: issuedAt,
+    });
+
+    return token;
+  }),
     getOne: protectedProcedure.input(z.object({id : z.string() }))
     .query(async({input,ctx}) => {
         const [existingMeeting] = await db.select(
@@ -106,6 +130,53 @@ export const meetingsRouter = createTRPCRouter({
                 userId : ctx.auth.user.id,
             })
             .returning();
+//  this is basically creating the  room in the get streams server by passing details of the user
+    const call = streamVideo.video.call("default", createdMeeting.id);
+        await call.create({
+            data: {
+            created_by_id: ctx.auth.user.id,
+            custom: {
+                meetingId: createdMeeting.id,
+                meetingName: createdMeeting.name
+            },
+            settings_override: {
+                transcription: {
+                language: "en",
+                mode: "auto-on",
+                closed_caption_mode: "auto-on",
+                },
+                recording: {
+                mode: "auto-on",
+                quality: "1080p",
+                },
+            },
+            },
+        });
+
+        const [existingAgent] = await db
+            .select()
+            .from(agents)
+            .where(eq(agents.id, createdMeeting.agentId));
+
+        if (!existingAgent) {
+            throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Agent not found",
+            });
+        }
+//  adding the agent to the stream db just like a user
+        await streamVideo.upsertUsers([
+            {
+            id: existingAgent.id,
+            name: existingAgent.name,
+            role: "user",
+            image: generateAvatarUri({
+                seed: existingAgent.name,
+                variant: "botttsNeutral",
+            }),
+            },
+        ]);
+
             return createdMeeting;
         }),
     update : protectedProcedure
