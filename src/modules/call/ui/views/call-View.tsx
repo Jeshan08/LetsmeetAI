@@ -16,8 +16,9 @@ export const CallView = ({
 }: Props) => {
   const trpc = useTRPC();
   const { data } = useSuspenseQuery(trpc.meetings.getOne.queryOptions({ id: meetingId }));
-
+  console.log("outsider the meeting page");
   if (data.status === "completed") {
+    console.log("completed the meeting page");
     return (
       <div className="flex h-screen items-center justify-center">
         <ErrorState
