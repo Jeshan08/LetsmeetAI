@@ -67,7 +67,7 @@ function CommandResponsiveDialog({
   title = "Command Palette",
   description = "Search for a command to run...",
   children,
-  shouldFilter = "true",
+  shouldFilter = true,
   ...props
 }: React.ComponentProps<typeof Dialog> & {
   title?: string
