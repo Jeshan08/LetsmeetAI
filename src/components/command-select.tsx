@@ -1,5 +1,5 @@
 import { ReactNode,useState } from "react";
-import { ChevronDownIcon, ChevronsUpDownIcon } from "lucide-react";
+import {  ChevronsUpDownIcon } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Button } from "./ui/button";
