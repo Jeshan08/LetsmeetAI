@@ -33,7 +33,11 @@ export const AgentIdView = ({ agentId }: Props) => {
     trpc.agents.remove.mutationOptions({
       onSuccess:async() =>{
         await queryClient.invalidateQueries(trpc.agents.getMany.queryOptions({}))
-        // TODO ; add and validatethe free tier usage as well
+        
+        await queryClient.invalidateQueries(
+          trpc.premium.getFreeUsage.queryOptions()
+        );
+
         router.push("/agents")
       },
       onError: (error) =>{

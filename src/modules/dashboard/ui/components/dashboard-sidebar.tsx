@@ -21,6 +21,8 @@ import {
 
 
 import { usePathname } from "next/navigation";
+
+import { DashboardTrial } from "./dashboard-trial";
 import {DashboardUserButton} from "./dashboard-user-button";
 
 
@@ -117,6 +119,7 @@ export const DashboardSidebar = ()=> {
                 </SidebarGroup>
             </SidebarContent>
             <SidebarFooter className="text-white">
+                <DashboardTrial />
                 <DashboardUserButton />
             </SidebarFooter>
         </Sidebar>
