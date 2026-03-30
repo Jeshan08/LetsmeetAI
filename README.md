@@ -10,6 +10,9 @@ AI-powered video call application with real-time agents, meeting summaries, and 
 * 🔐 Authentication with Better Auth
 * 📱 Mobile responsive design
 * ⚙️ Background jobs with Inngest
+* 🔒 Intelligent Resource Guarding: Implemented a 20-second trial "Kill-Switch" for free users to manage LLM and Video API costs.
+* 💳 Tiered Access Control: Integrated a gated "Ask AI" chat feature and dynamic meeting limits based on user subscription status.
+* 📡 Webhook-Driven State Machine: Real-time meeting state transitions (Active → Processing → Completed) handled via Stream and Polar webhooks.
 
 ## Tech Stack
 * Next.js 15
@@ -24,6 +27,8 @@ AI-powered video call application with real-time agents, meeting summaries, and 
 * Better Auth
 * Inngest
 * Polar
+* Security: Rate-limiting logic and Tier-based component gating.
+* Webhooks: Automated server-side state management via ngrok and Inngest.
 
 ## Development Flow
 
