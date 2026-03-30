@@ -13,6 +13,7 @@ import { streamVideo } from "@/lib/stream-video";
 import { generateAvatarUri } from "@/lib/avatar";
 import JSONL from "jsonl-parse-stringify";
 import { streamChat } from "@/lib/stream-chat";
+import { polarClient } from "@/lib/polar";
 
 
 export const meetingsRouter = createTRPCRouter({
@@ -301,6 +302,20 @@ export const meetingsRouter = createTRPCRouter({
      remove: protectedProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
+
+      // restricting delete when free tier 
+      const customer = await polarClient.customers.getStateExternal({
+        externalId : ctx.auth.user.id,
+      });
+      const hasActiveSubscription = customer.activeSubscriptions[0];
+
+      if (!hasActiveSubscription) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Deleting meetings is disabled in the Free Tier to protect demo integrity.",
+        });
+      }
+
       const [removedMeeting] = await db
         .delete(meetings)
         .where(
