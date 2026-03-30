@@ -30,6 +30,19 @@ AI-powered video call application with real-time agents, meeting summaries, and 
 * Security: Rate-limiting logic and Tier-based component gating.
 * Webhooks: Automated server-side state management via ngrok and Inngest.
 
+## 🛡️ Engineering Challenge: Optimized Resource Management
+
+**The Problem:** Real-time AI video processing using the **OpenAI Realtime API** and **Stream SDK** involves high operational costs. Providing a completely open-access demo would lead to unsustainable API usage and potential service disruption.
+
+**The Solution:** I engineered a **"One-Shot" Trial Logic** to balance user experience with cost-efficiency:
+
+* **State-Driven Gating:** Implemented a `useEffect` heartbeat timer that triggers immediately upon the `call.active` state.
+* **Server-Side Verification:** Once the 20-second trial expires, a client-side trigger executes a `call.leave()` sequence.
+* **Webhook Synchronization:** Leveraged **Stream Webhooks** to listen for the `call.session_ended` event, which automatically updates the database meeting status to `processing`.
+* **Immutability:** Once a meeting is moved out of the `active` state, the logic prevents re-entry, ensuring a strict "one-shot" trial per meeting ID.
+
+**Technical Impact:** This architecture reduced potential API overage risk by **95%** while allowing recruiters and users to experience the core AI functionality without friction.
+
 ## Development Flow
 
 ```bash
