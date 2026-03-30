@@ -15,6 +15,8 @@ import { ProcessingState } from "../components/processing-state";
 import { ActiveState } from "../components/active-state";
 import { UpcomingState } from "../components/upcoming-state";
 import { CompletedState } from "../components/completed-state";
+import { toast } from "sonner";
+import { Sparkles } from "lucide-react";
 
 interface Props {
   meetingId: string;
@@ -36,6 +38,10 @@ export const MeetingIdView = ({ meetingId }: Props) => {
     trpc.meetings.getOne.queryOptions({ id: meetingId }),
   );
 
+  const { data: usage } = useSuspenseQuery(
+    trpc.premium.getFreeUsage.queryOptions(),
+  );
+
   const removeMeeting = useMutation(
     trpc.meetings.remove.mutationOptions({
       onSuccess: async () => {
@@ -48,6 +54,27 @@ export const MeetingIdView = ({ meetingId }: Props) => {
     }),
   );
   const handleRemoveMeeting = async () => {
+    // check if free tier so to display alert and not delete 
+    const isFreeTier = usage !== null;
+    
+    if (isFreeTier) {
+      toast.error(
+  <div className="flex items-center gap-2">
+    <Sparkles className="h-4 w-4 text-blue-500" />
+    <span>Pro Feature</span>
+  </div>,
+  {
+    description: "Deletion is reserved for Pro members.",
+    action: {
+      label: "Get Pro",
+      onClick: () => router.push("/upgrade"),
+      actionButtonStyle: { backgroundColor: '#2563eb' }
+    },
+  }
+  );
+    return;
+}
+
     const ok = await confirmRemove();
 
     if (!ok) return;
