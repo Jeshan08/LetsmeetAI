@@ -1,5 +1,5 @@
 import OpenAI from "openai";
-import { and, eq, not } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
 
 import { ChatCompletionMessageParam } from "openai/resources/index.mjs";
@@ -60,39 +60,62 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Missing meetingId" }, { status: 400 });
     }
 
-    const [existingMeeting] = await db
-      .select()
-      .from(meetings)
-      .where(
-        and(
-          eq(meetings.id, meetingId),
-          not(eq(meetings.status, "completed")),
-          not(eq(meetings.status, "active")),
-          not(eq(meetings.status, "cancelled")),
-          not(eq(meetings.status, "processing")),
-        )
-      );
+    // const [existingMeeting] = await db
+    //   .select()
+    //   .from(meetings)
+    //   .where(
+    //     and(
+    //       eq(meetings.id, meetingId),
+    //       not(eq(meetings.status, "completed")),
+    //       not(eq(meetings.status, "active")),
+    //       not(eq(meetings.status, "cancelled")),
+    //       not(eq(meetings.status, "processing")),
+    //     )
+    //   );
 
-    if (!existingMeeting) {
-      return NextResponse.json({ error: "Meeting not found" }, { status: 404 });
-    }
+    // if (!existingMeeting) {
+    //   return NextResponse.json({ error: "Meeting not found" }, { status: 404 });
+    // }
 
-    await db
+    const [updateMeeting] = await db
       .update(meetings)
       .set({
         status: "active",
         startedAt: new Date(),
       })
-      .where(eq(meetings.id, existingMeeting.id));
+      .where(
+        and(
+          eq(meetings.id, meetingId),
+          eq(meetings.status, "upcomming") // Ensures only 'upcomming' meetings can start
+        )
+      )
+      .returning();
+
+      if (!updateMeeting) {
+      console.log("DEBUG: Meeting already active. Ignoring duplicate webhook.");
+      return NextResponse.json({ status: "already_handled" });
+    }
 
     const [existingAgent] = await db
       .select()
       .from(agents)
-      .where(eq(agents.id, existingMeeting.agentId));
+      .where(eq(agents.id, updateMeeting.agentId));
 
     if (!existingAgent) {
       return NextResponse.json({ error: "Agent not found" }, { status: 404 });
     }
+    
+    console.log("DEBUG: Spawning Agent with instructions:", existingAgent.instructions);
+
+    
+    // const [existingAgent] = await db
+    //   .select()
+    //   .from(agents)
+    //   .where(eq(agents.id, existingMeeting.agentId));
+
+    // if (!existingAgent) {
+    //   return NextResponse.json({ error: "Agent not found" }, { status: 404 });
+    // }
     
     const call = streamVideo.video.call("default", meetingId);
    
@@ -102,9 +125,13 @@ export async function POST(req: NextRequest) {
       agentUserId: existingAgent.id,
     });
 
-    realtimeClient.updateSession({
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
+    await realtimeClient.updateSession({
       instructions: existingAgent.instructions,
     });
+
+    return NextResponse.json({ status: "agent_spawned" });
   
   } else if (eventType === "call.session_participant_left") {
     const event = payload as CallSessionParticipantLeftEvent;
