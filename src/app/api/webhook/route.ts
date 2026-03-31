@@ -89,24 +89,21 @@ export async function POST(req: NextRequest) {
     
     
     const call = streamVideo.video.call("default", meetingId);
-   console.log("line 92");
+
     const realtimeClient = await streamVideo.video.connectOpenAi({
       call,
       openAiApiKey: process.env.OPENAI_API_KEY!,
       agentUserId: existingAgent.id,
     });
 
-    console.log("line 99");
 
-    console.log("DEBUG: connectOpenAi completed, about to updateSession");
-    console.log("DEBUG: instructions:", existingAgent.instructions?.slice(0, 100));
     await realtimeClient.updateSession({
       instructions: existingAgent.instructions,
     });
 
-console.log("DEBUG: updateSession completed successfully");
 
-return NextResponse.json({ status: "agent_spawned" });
+
+  return NextResponse.json({ status: "agent_spawned" });
 
 
   } else if (eventType === "call.session_participant_left") {
