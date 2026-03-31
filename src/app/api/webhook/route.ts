@@ -100,14 +100,11 @@ export async function POST(req: NextRequest) {
 
     console.log("DEBUG: connectOpenAi completed, about to updateSession");
     console.log("DEBUG: instructions:", existingAgent.instructions?.slice(0, 100));
-await realtimeClient.updateSession({
-  instructions: existingAgent.instructions,
-});
+    await realtimeClient.updateSession({
+      instructions: existingAgent.instructions,
+    });
 
 console.log("DEBUG: updateSession completed successfully");
-
-realtimeClient.realtime.send("response.cancel", {});
-console.log("DEBUG: response.cancel sent");
 
 return NextResponse.json({ status: "agent_spawned" });
 
