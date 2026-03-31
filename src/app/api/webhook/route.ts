@@ -60,23 +60,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Missing meetingId" }, { status: 400 });
     }
 
-    // const [existingMeeting] = await db
-    //   .select()
-    //   .from(meetings)
-    //   .where(
-    //     and(
-    //       eq(meetings.id, meetingId),
-    //       not(eq(meetings.status, "completed")),
-    //       not(eq(meetings.status, "active")),
-    //       not(eq(meetings.status, "cancelled")),
-    //       not(eq(meetings.status, "processing")),
-    //     )
-    //   );
-
-    // if (!existingMeeting) {
-    //   return NextResponse.json({ error: "Meeting not found" }, { status: 404 });
-    // }
-
     const [updateMeeting] = await db
       .update(meetings)
       .set({
@@ -92,7 +75,6 @@ export async function POST(req: NextRequest) {
       .returning();
 
       if (!updateMeeting) {
-      console.log("DEBUG: Meeting already active. Ignoring duplicate webhook.");
       return NextResponse.json({ status: "already_handled" });
     }
 
@@ -105,34 +87,31 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Agent not found" }, { status: 404 });
     }
     
-    console.log("DEBUG: Spawning Agent with instructions:", existingAgent.instructions);
-
-    
-    // const [existingAgent] = await db
-    //   .select()
-    //   .from(agents)
-    //   .where(eq(agents.id, existingMeeting.agentId));
-
-    // if (!existingAgent) {
-    //   return NextResponse.json({ error: "Agent not found" }, { status: 404 });
-    // }
     
     const call = streamVideo.video.call("default", meetingId);
-   
+   console.log("line 92");
     const realtimeClient = await streamVideo.video.connectOpenAi({
       call,
       openAiApiKey: process.env.OPENAI_API_KEY!,
       agentUserId: existingAgent.id,
     });
 
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    console.log("line 99");
 
-    await realtimeClient.updateSession({
-      instructions: existingAgent.instructions,
-    });
+    console.log("DEBUG: connectOpenAi completed, about to updateSession");
+    console.log("DEBUG: instructions:", existingAgent.instructions?.slice(0, 100));
+await realtimeClient.updateSession({
+  instructions: existingAgent.instructions,
+});
 
-    return NextResponse.json({ status: "agent_spawned" });
-  
+console.log("DEBUG: updateSession completed successfully");
+
+realtimeClient.realtime.send("response.cancel", {});
+console.log("DEBUG: response.cancel sent");
+
+return NextResponse.json({ status: "agent_spawned" });
+
+
   } else if (eventType === "call.session_participant_left") {
     const event = payload as CallSessionParticipantLeftEvent;
     const meetingId = event.call_cid.split(":")[1]; // call_cid is formatted as "type:id"
