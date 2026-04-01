@@ -52,61 +52,6 @@ export async function POST(req: NextRequest) {
 
   const eventType = (payload as Record<string, unknown>)?.type;
 
-  // if (eventType === "call.session_started") {
-  //   const event = payload as CallSessionStartedEvent;
-  //   const meetingId = event.call.custom?.meetingId;
-
-  //   if (!meetingId) {
-  //     return NextResponse.json({ error: "Missing meetingId" }, { status: 400 });
-  //   }
-
-  //   const [updateMeeting] = await db
-  //     .update(meetings)
-  //     .set({
-  //       status: "active",
-  //       startedAt: new Date(),
-  //     })
-  //     .where(
-  //       and(
-  //         eq(meetings.id, meetingId),
-  //         eq(meetings.status, "upcomming") // Ensures only 'upcomming' meetings can start
-  //       )
-  //     )
-  //     .returning();
-
-  //     if (!updateMeeting) {
-  //     return NextResponse.json({ status: "already_handled" });
-  //   }
-
-  //   const [existingAgent] = await db
-  //     .select()
-  //     .from(agents)
-  //     .where(eq(agents.id, updateMeeting.agentId));
-
-  //   if (!existingAgent) {
-  //     return NextResponse.json({ error: "Agent not found" }, { status: 404 });
-  //   }
-    
-    
-  //   const call = streamVideo.video.call("default", meetingId);
-
-  //   const realtimeClient = await streamVideo.video.connectOpenAi({
-  //     call,
-  //     openAiApiKey: process.env.OPENAI_API_KEY!,
-  //     agentUserId: existingAgent.id,
-  //   });
-
-
-  //   await realtimeClient.updateSession({
-  //     instructions: existingAgent.instructions,
-  //   });
-
-
-
-  // return NextResponse.json({ status: "agent_spawned" });
-
-
-  // } 
   if (eventType === "call.session_started") {
     const event = payload as CallSessionStartedEvent;
     const meetingId = event.call.custom?.meetingId;
@@ -115,52 +60,107 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Missing meetingId" }, { status: 400 });
     }
 
-    const [existingMeeting] = await db
-      .select()
-      .from(meetings)
-      .where(
-        and(
-          eq(meetings.id, meetingId),
-          not(eq(meetings.status, "completed")),
-          not(eq(meetings.status, "active")),
-          not(eq(meetings.status, "cancelled")),
-          not(eq(meetings.status, "processing")),
-        )
-      );
-
-    if (!existingMeeting) {
-      return NextResponse.json({ error: "Meeting not found" }, { status: 404 });
-    }
-
-    await db
+    const [updateMeeting] = await db
       .update(meetings)
       .set({
         status: "active",
         startedAt: new Date(),
       })
-      .where(eq(meetings.id, existingMeeting.id));
+      .where(
+        and(
+          eq(meetings.id, meetingId),
+          eq(meetings.status, "upcomming") // Ensures only 'upcomming' meetings can start
+        )
+      )
+      .returning();
+
+      if (!updateMeeting) {
+      return NextResponse.json({ status: "already_handled" });
+    }
 
     const [existingAgent] = await db
       .select()
       .from(agents)
-      .where(eq(agents.id, existingMeeting.agentId));
+      .where(eq(agents.id, updateMeeting.agentId));
 
     if (!existingAgent) {
       return NextResponse.json({ error: "Agent not found" }, { status: 404 });
     }
     
+    
     const call = streamVideo.video.call("default", meetingId);
-   
+
     const realtimeClient = await streamVideo.video.connectOpenAi({
       call,
       openAiApiKey: process.env.OPENAI_API_KEY!,
       agentUserId: existingAgent.id,
     });
 
-    realtimeClient.updateSession({
+
+    await realtimeClient.updateSession({
       instructions: existingAgent.instructions,
     });
-  }
+
+
+
+  return NextResponse.json({ status: "agent_spawned" });
+
+
+  } 
+  // if (eventType === "call.session_started") {
+  //   const event = payload as CallSessionStartedEvent;
+  //   const meetingId = event.call.custom?.meetingId;
+
+  //   if (!meetingId) {
+  //     return NextResponse.json({ error: "Missing meetingId" }, { status: 400 });
+  //   }
+
+  //   const [existingMeeting] = await db
+  //     .select()
+  //     .from(meetings)
+  //     .where(
+  //       and(
+  //         eq(meetings.id, meetingId),
+  //         not(eq(meetings.status, "completed")),
+  //         not(eq(meetings.status, "active")),
+  //         not(eq(meetings.status, "cancelled")),
+  //         not(eq(meetings.status, "processing")),
+  //       )
+  //     );
+
+  //   if (!existingMeeting) {
+  //     return NextResponse.json({ error: "Meeting not found" }, { status: 404 });
+  //   }
+
+  //   await db
+  //     .update(meetings)
+  //     .set({
+  //       status: "active",
+  //       startedAt: new Date(),
+  //     })
+  //     .where(eq(meetings.id, existingMeeting.id));
+
+  //   const [existingAgent] = await db
+  //     .select()
+  //     .from(agents)
+  //     .where(eq(agents.id, existingMeeting.agentId));
+
+  //   if (!existingAgent) {
+  //     return NextResponse.json({ error: "Agent not found" }, { status: 404 });
+  //   }
+    
+  //   const call = streamVideo.video.call("default", meetingId);
+   
+  //   const realtimeClient = await streamVideo.video.connectOpenAi({
+  //     call,
+  //     openAiApiKey: process.env.OPENAI_API_KEY!,
+  //     agentUserId: existingAgent.id,
+  //   });
+
+  //   realtimeClient.updateSession({
+  //     instructions: existingAgent.instructions,
+  //   });
+  // }
   else if (eventType === "call.session_participant_left") {
     const event = payload as CallSessionParticipantLeftEvent;
     const meetingId = event.call_cid.split(":")[1]; // call_cid is formatted as "type:id"
