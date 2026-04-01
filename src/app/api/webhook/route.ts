@@ -187,7 +187,9 @@ export async function POST(req: NextRequest) {
       })
       .where(and(eq(meetings.id, meetingId), eq(meetings.status, "active")));
   }else if (eventType === "call.transcription_ready") {
+    
     const event = payload as CallTranscriptionReadyEvent;
+  
     const meetingId = event.call_cid.split(":")[1]; // call_cid is formatted as "type:id"
 
     const [updatedMeeting] = await db
@@ -198,6 +200,7 @@ export async function POST(req: NextRequest) {
       .where(eq(meetings.id, meetingId))
       .returning();
 
+        console.log("updatedMeeting:", updatedMeeting);
     if (!updatedMeeting) {
       return NextResponse.json({ error: "Meeting not found" }, { status: 404 });
     }
