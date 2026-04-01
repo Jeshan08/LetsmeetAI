@@ -189,11 +189,8 @@ export async function POST(req: NextRequest) {
   }else if (eventType === "call.transcription_ready") {
     
     const event = payload as CallTranscriptionReadyEvent;
-    console.log("FULL TRANSCRIPTION EVENT:", JSON.stringify(event, null, 2)); // ← raw payload
+  
     const meetingId = event.call_cid.split(":")[1]; // call_cid is formatted as "type:id"
-
-    console.log("meetingId:", meetingId);
-  console.log("transcriptUrl:", event.call_transcription.url);
 
     const [updatedMeeting] = await db
       .update(meetings)
