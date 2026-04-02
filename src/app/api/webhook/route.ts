@@ -96,11 +96,9 @@ export async function POST(req: NextRequest) {
       agentUserId: existingAgent.id,
     });
 
-
     await realtimeClient.updateSession({
       instructions: existingAgent.instructions,
     });
-
 
 
   return NextResponse.json({ status: "agent_spawned" });
@@ -200,7 +198,7 @@ export async function POST(req: NextRequest) {
       .where(eq(meetings.id, meetingId))
       .returning();
 
-        console.log("updatedMeeting:", updatedMeeting);
+
     if (!updatedMeeting) {
       return NextResponse.json({ error: "Meeting not found" }, { status: 404 });
     }
@@ -223,7 +221,6 @@ export async function POST(req: NextRequest) {
       })
       .where(eq(meetings.id, meetingId));
   }else if (eventType === "message.new") {
-    // console.log(eventType)
     const event = payload as MessageNewEvent;
 
     const userId = event.user?.id;
