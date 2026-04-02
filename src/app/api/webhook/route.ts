@@ -15,7 +15,7 @@ import {
 } from "@stream-io/node-sdk";
 
 import { db } from "@/db";
-import { agents, meetings } from "@/db/schema";
+import { agents, meetings , processedMessages} from "@/db/schema";
 import { streamVideo } from "@/lib/stream-video";
 import { inngest } from "@/inngest/client";
 import { streamChat } from "@/lib/stream-chat";
@@ -223,13 +223,15 @@ export async function POST(req: NextRequest) {
       })
       .where(eq(meetings.id, meetingId));
   }else if (eventType === "message.new") {
+    // console.log(eventType)
     const event = payload as MessageNewEvent;
 
     const userId = event.user?.id;
     const channelId = event.channel_id;
     const text = event.message?.text;
+    const messageId = event.message?.id;
 
-    if (!userId || !channelId || !text) {
+    if (!userId || !channelId || !text || !messageId ) {
       return NextResponse.json(
         { error: "Missing required fields" },
         { status: 400 }
@@ -255,6 +257,13 @@ export async function POST(req: NextRequest) {
     }
 
     if (userId !== existingAgent.id) {
+      try{
+        await db.insert(processedMessages).values({
+          messageId
+        })
+      }catch(error){
+        return NextResponse.json({status : "duplicate, skipped", error : error})
+      }
       const instructions = `
       You are an AI assistant helping the user revisit a recently completed meeting.
       Below is a summary of the meeting, generated from the transcript:
